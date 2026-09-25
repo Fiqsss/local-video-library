@@ -28,12 +28,13 @@ class VideoController extends Controller
         if ($request->filled('model')) {
             $query->whereHas('models', fn($q) => $q->where('id', $request->integer('model')));
         }
-        $videos = $query->paginate(24)->withQueryString();
+        $videos = $query->paginate(20)->withQueryString();
         $categories = Category::withCount('videos')->orderBy('name')->get();
+        $models = ModelName::withCount('videos')->orderBy('name')->get();
         $pageCategory = $request->filled('category')
             ? $categories->firstWhere('slug', $request->string('category')->toString())
             : null;
-        return view('videos.index', compact('videos', 'categories', 'pageCategory'));
+        return view('videos.index', compact('videos', 'categories', 'models', 'pageCategory'));
     }
 
     public function show(Video $video)
@@ -94,12 +95,19 @@ class VideoController extends Controller
 
     public function browseFiles(Request $request)
     {
-        $root = realpath(env('VIDEO_BROWSE_ROOT', 'D:\\'));
-        $path = $request->query('path', $root);
+        $rootConfig = env('VIDEO_BROWSE_ROOT');
+        $path = $request->query('path', 'D:\\');
         $path = realpath($path);
 
-        $rootPrefix = rtrim($root, '\\/') . DIRECTORY_SEPARATOR;
-        abort_unless($root && $path && ($path === $root || str_starts_with(strtolower($path), strtolower($rootPrefix))), 403);
+        if ($rootConfig) {
+            $root = realpath($rootConfig);
+            abort_unless($root && $path, 403);
+            $rootPrefix = rtrim($root, '\\/') . DIRECTORY_SEPARATOR;
+            abort_unless($path === $root || str_starts_with(strtolower($path), strtolower($rootPrefix)), 403);
+        } else {
+            abort_unless($path, 403);
+        }
+
         abort_unless(is_dir($path), 404);
 
         $videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'm4v', 'avi'];
@@ -115,7 +123,14 @@ class VideoController extends Controller
         ]))->filter(fn($entry) => $term === '' || str_contains(strtolower($entry['name']), strtolower($term)))
             ->sortBy([['type', 'desc'], ['name', 'asc']])->values();
 
-        return response()->json(['current' => $path, 'parent' => $path === $root ? null : dirname($path), 'entries' => $entries]);
+        if ($rootConfig) {
+            $parent = ($path === $root) ? null : dirname($path);
+        } else {
+            $isRootDrive = preg_match('~^[a-z]:\\\\?$~i', $path);
+            $parent = $isRootDrive ? null : dirname($path);
+        }
+
+        return response()->json(['current' => $path, 'parent' => $parent, 'entries' => $entries]);
     }
 
     public function admin()
@@ -127,33 +142,34 @@ class VideoController extends Controller
         return view('admin.index', compact('videos', 'categories', 'models', 'totalVideos'));
     }
 
-    public function store(Request $request)
+public function store(Request $request)
     {
         $data = $this->validated($request);
         $paths = $data['selected_files'] ?? [$data['external_url']];
         $createdCount = count($paths);
         $titles = $data['file_titles'] ?? [];
+        $modelIds = $data['model_ids'] ?? [];
         foreach ($paths as $index => $path) {
             $videoData = $data;
             $videoData['source_path'] = $path;
             $videoData['title'] = $titles[$index] ?? ($data['title'] ?: pathinfo($path, PATHINFO_FILENAME));
             unset($videoData['external_url'], $videoData['selected_files'], $videoData['file_titles']);
             $video = Video::create($videoData);
-            $this->syncTags($video, $request);
+            $this->syncTags($video, $request, $modelIds);
         }
         return redirect()->route('admin.videos.index')->with('success', $createdCount === 1
-            ? 'Video berhasil ditambahkan.'
-            : "{$createdCount} video berhasil ditambahkan.");
+            ? 'berhasil ditambahkan.'
+            : "{$createdCount} videoimmel Successfully ditambahkan.");
     }
 
-    public function update(Request $request, Video $video)
+public function update(Request $request, Video $video)
     {
         $data = $this->validated($request, $video);
         $data['source_path'] = $data['external_url'];
         unset($data['external_url']);
         $video->update($data);
-        $this->syncTags($video, $request);
-        return redirect()->route('admin.videos.index')->with('success', 'Video berhasil diperbarui.');
+        $this->syncTags($video, $request, $data['model_ids'] ?? []);
+        return redirect()->route('admin.videos.index')->with('success', 'berhasil diperbarui.');
     }
 
     public function destroy(Video $video)
@@ -178,7 +194,7 @@ class VideoController extends Controller
         $rules = [
             'title' => ['nullable', 'string', 'max:180', 'required_without:selected_files'],
             'duration' => ['nullable', 'regex:/^\d{1,3}:[0-5]\d$/'],
-            'model_ids' => ['required', 'array', 'min:1'],
+            'model_ids' => ['nullable', 'array'],
             'model_ids.*' => ['integer', 'exists:models,id'],
             'category_ids' => ['required', 'array', 'min:1'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
@@ -204,20 +220,20 @@ class VideoController extends Controller
             }
         }
         $data['category_id'] = (int) $data['category_ids'][0];
-        $data['model_name'] = ModelName::whereKey((int) $data['model_ids'][0])->value('name');
+        $data['model_name'] = !empty($data['model_ids']) ? ModelName::whereKey((int) $data['model_ids'][0])->value('name') : null;
         if ($data['source_type'] === 'url') $data['source_path'] = $data['external_url'];
         return $data;
     }
 
-    private function syncTags(Video $video, Request $request): void
+    private function syncTags(Video $video, Request $request, ?array $modelIds = null): void
     {
         $categoryIds = array_values(array_unique(array_map('intval', $request->input('category_ids', []))));
-        $modelIds = array_values(array_unique(array_map('intval', $request->input('model_ids', []))));
+        $modelIds = $modelIds ?? array_values(array_unique(array_map('intval', $request->input('model_ids', []))));
         $video->categories()->sync($categoryIds);
         $video->models()->sync($modelIds);
         $video->update([
-            'category_id' => $categoryIds[0],
-            'model_name' => ModelName::whereKey($modelIds[0])->value('name'),
+            'category_id' => $categoryIds[0] ?? null,
+            'model_name' => $modelIds[0] ? ModelName::whereKey($modelIds[0])->value('name') : null,
         ]);
     }
 }

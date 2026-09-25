@@ -9,3 +9,51 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+.pagination-custom {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.pagination-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.pagination-custom .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 0.45rem;
+    border: 1px solid var(--line, #dfe3eb);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text, #182238);
+    font-size: 12px;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.pagination-custom .page-link:hover,
+.pagination-custom .page-link.active {
+    border-color: var(--pink, #d52b73);
+    background: var(--pink, #d52b73);
+    color: #fff;
+}
+
+.pagination-custom .page-link.disabled {
+    color: #a3a9b5;
+    background: #f5f6f8;
+    cursor: not-allowed;
+}
+
+.pagination-custom .icon {
+    width: 12px;
+    height: 12px;
+}
