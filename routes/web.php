@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ModelController;
 
 Route::get('/', [VideoController::class, 'index'])->name('videos.index');
 Route::get('/videos/{video}/stream', [VideoController::class, 'stream'])->name('videos.stream');
@@ -15,7 +16,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/videos', [VideoController::class, 'store'])->name('videos.store');
     Route::put('/videos/{video}', [VideoController::class, 'update'])->name('videos.update');
     Route::delete('/videos/{video}', [VideoController::class, 'destroy'])->name('videos.destroy');
+    Route::delete('/videos-bulk', [VideoController::class, 'bulkDestroy'])->name('videos.bulk-destroy');
 
     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+    Route::post('/models', [ModelController::class, 'store'])->name('models.store');
+    Route::delete('/models/{model}', [ModelController::class, 'destroy'])->name('models.destroy');
 });
