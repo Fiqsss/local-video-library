@@ -2,7 +2,7 @@
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>@yield('title', 'VidoHub')</title>
 <style>
-:root{--bg:#f7f8fc;--text:#182238;--muted:#718096;--line:#e8ebf3;--pink:#ec2877;--soft:#fff0f6;--blue:#edf5ff;--red:#d93655}
+:root{--bg:#f5f7fb;--text:#172033;--muted:#7b8494;--line:#e5e9f0;--pink:#ff4f87;--pink-soft:#fff0f5;--blue:#edf5ff;--red:#e5484d;--success:#22a06b}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,sans-serif}
 header{display:flex;justify-content:space-between;align-items:center;padding:18px clamp(18px,5vw,56px);background:#fff;border-bottom:1px solid var(--line);gap:16px;flex-wrap:wrap}
 .brand{font-size:25px;font-weight:850;letter-spacing:-.7px;transition:transform .2s ease}.brand span{color:var(--pink)}a{color:var(--pink);text-decoration:none}.brand:hover{transform:translateY(-1px)}.main-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.main-nav .btn{transition:transform .2s ease,box-shadow .2s ease,background .2s ease}.main-nav .btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px #18223818;background:#ffe4f0}.main-nav .btn:focus-visible,.btn:focus-visible,a:focus-visible{outline:3px solid #ec287766;outline-offset:2px}
