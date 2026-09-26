@@ -1,10 +1,9 @@
-@extends('layouts.app')
-@section('title', $video->title . ' | VidoHub')
-@section('content')
+<?php $__env->startSection('title', $video->title . ' | VidoHub'); ?>
+<?php $__env->startSection('content'); ?>
 <style>
     .detail-page { --detail-pink:#ff7f96; --detail-navy:#172033; --detail-heading:#68736f; --detail-body:#a5adaa; --detail-line:#e2e6e4; max-width: none; margin: -28px -20px 0; color: var(--detail-heading); }
     .detail-hero { position: relative; min-height: 112px; display: flex; align-items: center; overflow: hidden; color: #fff; background: var(--detail-navy); isolation: isolate; }
-    .detail-hero::before { content: ''; position: absolute; inset: -20px; z-index: -2; background: linear-gradient(90deg, rgba(0,0,0,.62), rgba(0,0,0,.5)), url('{{ $video->thumbnail_url ?: ($video->source_type === 'local' ? route('videos.thumbnail', $video) : '') }}') center/cover; filter: blur(2px); }
+    .detail-hero::before { content: ''; position: absolute; inset: -20px; z-index: -2; background: linear-gradient(90deg, rgba(0,0,0,.62), rgba(0,0,0,.5)), url('<?php echo e($video->thumbnail_url ?: ($video->source_type === 'local' ? route('videos.thumbnail', $video) : '')); ?>') center/cover; filter: blur(2px); }
     .detail-hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background: rgba(0,0,0,.55); }
     .detail-hero-inner { width: min(1240px, 100%); margin: auto; padding: 22px 20px; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
     .detail-brand { flex: 0 0 auto; color: #fff; font-weight: 850; letter-spacing: -.04em; font-size: 24px; line-height: 1; }
@@ -63,30 +62,30 @@
 <div class="detail-page">
     <section class="detail-hero">
         <div class="detail-hero-inner">
-            <div><a class="detail-brand" href="{{ route('videos.index') }}">Vido<span>Hub</span></a><p class="detail-kicker">Editorial video catalogue</p></div>
-            <form class="detail-search" method="GET" action="{{ route('videos.index') }}"><div class="detail-search-row"><input name="q" placeholder="Cari video, model, atau kategori..." autocomplete="off" aria-label="Cari video"><button type="submit" aria-label="Cari">⌕</button></div><div class="detail-stats">{{ number_format($totalVideos, 0, ',', '.') }} videos &nbsp; · &nbsp; +{{ $todayVideos }} today &nbsp; · &nbsp; Trending</div></form>
+            <div><a class="detail-brand" href="<?php echo e(route('videos.index')); ?>">Vido<span>Hub</span></a><p class="detail-kicker">Editorial video catalogue</p></div>
+            <form class="detail-search" method="GET" action="<?php echo e(route('videos.index')); ?>"><div class="detail-search-row"><input name="q" placeholder="Cari video, model, atau kategori..." autocomplete="off" aria-label="Cari video"><button type="submit" aria-label="Cari">⌕</button></div><div class="detail-stats"><?php echo e(number_format($totalVideos, 0, ',', '.')); ?> videos &nbsp; · &nbsp; +<?php echo e($todayVideos); ?> today &nbsp; · &nbsp; Trending</div></form>
         </div>
     </section>
     <div class="detail-divider"></div>
     <div class="detail-inner">
         <div class="detail-main">
             <div class="detail-player" id="playerShell">
-                @if($video->youtube_embed_url)
-                    <iframe id="videoPlayer" src="{{ $video->youtube_embed_url }}" title="{{ $video->title }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                @else
-                    <video id="videoPlayer" controls playsinline preload="metadata" poster="{{ $video->thumbnail_url ?: ($video->source_type === 'local' ? route('videos.thumbnail', $video) : '') }}"><source src="{{ $video->playback_url }}">Browser kamu tidak mendukung pemutar video.</video>
-                @endif
+                <?php if($video->youtube_embed_url): ?>
+                    <iframe id="videoPlayer" src="<?php echo e($video->youtube_embed_url); ?>" title="<?php echo e($video->title); ?>" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <?php else: ?>
+                    <video id="videoPlayer" controls playsinline preload="metadata" poster="<?php echo e($video->thumbnail_url ?: ($video->source_type === 'local' ? route('videos.thumbnail', $video) : '')); ?>"><source src="<?php echo e($video->playback_url); ?>">Browser kamu tidak mendukung pemutar video.</video>
+                <?php endif; ?>
             </div>
-            <aside class="detail-recent"><h2 class="recent-heading">Recent videos</h2><ul class="recent-list">@forelse($recentVideos as $recent)<li><a href="{{ route('videos.show', $recent) }}">{{ $recent->title }}</a><div class="recent-meta">{{ $recent->category?->name ?: 'Uncategorized' }} · {{ $recent->model_name ?: 'Model unavailable' }} · {{ $recent->duration ?: '--:--' }}</div></li>@empty<li class="recent-meta">Belum ada video terbaru.</li>@endforelse</ul><a class="recent-more" href="{{ route('videos.index') }}">See all recent videos</a></aside>
+            <aside class="detail-recent"><h2 class="recent-heading">Recent videos</h2><ul class="recent-list"><?php $__empty_1 = true; $__currentLoopData = $recentVideos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $recent): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><li><a href="<?php echo e(route('videos.show', $recent)); ?>"><?php echo e($recent->title); ?></a><div class="recent-meta"><?php echo e($recent->category?->name ?: 'Uncategorized'); ?> · <?php echo e($recent->model_name ?: 'Model unavailable'); ?> · <?php echo e($recent->duration ?: '--:--'); ?></div></li><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><li class="recent-meta">Belum ada video terbaru.</li><?php endif; ?></ul><a class="recent-more" href="<?php echo e(route('videos.index')); ?>">See all recent videos</a></aside>
         </div>
         <section aria-labelledby="video-title">
-            <div class="detail-title-row"><h1 class="detail-title" id="video-title">{{ $video->title }}</h1><a class="detail-edit" href="{{ route('admin.videos.index', ['edit' => $video->id]) }}#video-form">Edit video</a></div>
-            <div class="detail-meta"><span>{{ optional($video->created_at)->format('d M Y') }}</span><span>·</span><span>{{ $video->duration ?: '--:--' }}</span><span>·</span><span>@forelse($video->models as $model)<a href="{{ route('videos.index', ['model' => $model->id]) }}">{{ $model->name }}</a>{{ !$loop->last ? ', ' : '' }}@empty{{ $video->model_name ?: 'Model unavailable' }}@endforelse</span><span>·</span><span class="favorite">♡ Favorite</span></div>
+            <div class="detail-title-row"><h1 class="detail-title" id="video-title"><?php echo e($video->title); ?></h1><a class="detail-edit" href="<?php echo e(route('admin.videos.index', ['edit' => $video->id])); ?>#video-form">Edit video</a></div>
+            <div class="detail-meta"><span><?php echo e(optional($video->created_at)->format('d M Y')); ?></span><span>·</span><span><?php echo e($video->duration ?: '--:--'); ?></span><span>·</span><span><?php $__empty_1 = true; $__currentLoopData = $video->models; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $model): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><a href="<?php echo e(route('videos.index', ['model' => $model->id])); ?>"><?php echo e($model->name); ?></a><?php echo e(!$loop->last ? ', ' : ''); ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php echo e($video->model_name ?: 'Model unavailable'); ?><?php endif; ?></span><span>·</span><span class="favorite">♡ Favorite</span></div>
         </section>
-        <section class="detail-categories"><h2 class="detail-section-heading">This video belongs to the following categories</h2><div class="category-links">@forelse($video->categories as $category)<a href="{{ route('videos.index', ['category' => $category->slug]) }}">{{ $category->name }}</a>{{ !$loop->last ? ', ' : '' }}@empty Uncategorized @endforelse</div></section>
+        <section class="detail-categories"><h2 class="detail-section-heading">This video belongs to the following categories</h2><div class="category-links"><?php $__empty_1 = true; $__currentLoopData = $video->categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><a href="<?php echo e(route('videos.index', ['category' => $category->slug])); ?>"><?php echo e($category->name); ?></a><?php echo e(!$loop->last ? ', ' : ''); ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?> Uncategorized <?php endif; ?></div></section>
         <h2 class="similar-heading"><span>Similar videos</span></h2>
-        <div class="detail-grid" id="relatedGrid">@forelse($recommendations as $item)<a class="detail-card" href="{{ route('videos.show', $item) }}"><div class="detail-thumb">@php($thumb = $item->thumbnail_url ?: ($item->source_type === 'local' ? route('videos.thumbnail', $item) : null)) @if($thumb)<img src="{{ $thumb }}" alt="{{ $item->title }}" loading="lazy" onerror="this.remove();this.nextElementSibling.hidden=false">@endif<span class="detail-thumb-fallback" @if($thumb) hidden @endif>Preview unavailable</span><span class="detail-duration">{{ $item->duration ?: '--:--' }}</span></div><strong class="detail-card-title">{{ $item->title }}</strong><div class="detail-card-meta">◷ {{ $item->duration ?: '--:--' }}</div></a>@empty<p class="detail-meta">Belum ada video serupa.</p>@endforelse</div>
-        @if($recommendations->hasMorePages())<div class="detail-load-more-wrap"><button class="detail-load-more" id="loadMoreRelated" type="button" data-url="{{ route('videos.related', $video) }}" data-page="1">Lihat lebih banyak...</button></div><p class="detail-load-error" id="relatedLoadError" hidden>Gagal memuat video. Coba lagi.</p><p class="detail-load-end" id="relatedLoadEnd" hidden>Semua video telah ditampilkan.</p>@else<p class="detail-load-end">Semua video telah ditampilkan.</p>@endif
+        <div class="detail-grid" id="relatedGrid"><?php $__empty_1 = true; $__currentLoopData = $recommendations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><a class="detail-card" href="<?php echo e(route('videos.show', $item)); ?>"><div class="detail-thumb"><?php ($thumb = $item->thumbnail_url ?: ($item->source_type === 'local' ? route('videos.thumbnail', $item) : null)); ?> <?php if($thumb): ?><img src="<?php echo e($thumb); ?>" alt="<?php echo e($item->title); ?>" loading="lazy" onerror="this.remove();this.nextElementSibling.hidden=false"><?php endif; ?><span class="detail-thumb-fallback" <?php if($thumb): ?> hidden <?php endif; ?>>Preview unavailable</span><span class="detail-duration"><?php echo e($item->duration ?: '--:--'); ?></span></div><strong class="detail-card-title"><?php echo e($item->title); ?></strong><div class="detail-card-meta">◷ <?php echo e($item->duration ?: '--:--'); ?></div></a><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><p class="detail-meta">Belum ada video serupa.</p><?php endif; ?></div>
+        <?php if($recommendations->hasMorePages()): ?><div class="detail-load-more-wrap"><button class="detail-load-more" id="loadMoreRelated" type="button" data-url="<?php echo e(route('videos.related', $video)); ?>" data-page="1">Lihat lebih banyak...</button></div><p class="detail-load-error" id="relatedLoadError" hidden>Gagal memuat video. Coba lagi.</p><p class="detail-load-end" id="relatedLoadEnd" hidden>Semua video telah ditampilkan.</p><?php else: ?><p class="detail-load-end">Semua video telah ditampilkan.</p><?php endif; ?>
     </div>
 </div>
 <script>
@@ -165,4 +164,6 @@
     });
 })();
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\xampp\htdocs\videohub\videohub\resources\views/videos/show.blade.php ENDPATH**/ ?>
